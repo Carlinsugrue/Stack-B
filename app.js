@@ -1,60 +1,58 @@
-const express = require('express');
-const path = require('path');
-const favicon = require('serve-favicon');
-const logger = require('morgan');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+var pg = require("pg");
 
-const routes = require('./server/routes/index');
-// var users = require('./routes/users');
+var indexRouter = require('./routes/index');
 
-const app = express();
+var app = express();
+var cons = require('consolidate');
+
+//------connection to DB------
+var connectionString = "postgres://postgres:password@localhost:5432/postgres";
 
 // view engine setup
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'html');
+app.engine('html', cons.swig)
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'html');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'client')));
+app.use('/', indexRouter);
+app.use('/static', express.static(__dirname + '/public'));
 
-app.use('/', routes);
-// app.use('/users', users);
+//------show data from postgresql------
+app.get('/nzcrime2017/victims', function (req, res, next) {
+    pg.connect(connectionString,function(err,client,done) {
+       if(err){
+           console.log("not able to get connection "+ err);
+           res.status(400).send(err);
+       } 
+       client.query('SELECT * FROM nzcrime2017', function(err,result) {
+           done(); // closing the connection;
+           if(err){
+               console.log(err);
+               res.status(400).send(err);
+           }
+           res.status(200).send(result.rows);
+       });
+    });
+});
 
 // catch 404 and forward to error handler
-app.use((req, res, next) => {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.use(function(req, res, next) {
+  next(createError(404));
 });
 
-// error handlers
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-  app.use((err, req, res, next) => {
-    res.status(err.status || 500);
-    res.json({
-      message: err.message,
-      error: err
-    });
-  });
-}
-
-// production error handler
-// no stacktraces leaked to user
-app.use((err, req, res, next) => {
+  // render the error page
   res.status(err.status || 500);
-  res.json({
-    message: err.message,
-    error: {}
-  });
+  res.render('error');
 });
-
 
 module.exports = app;
