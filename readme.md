@@ -1,9 +1,9 @@
-#STACK B - [NODE.JS-POSTGRESQL]
+# STACK B - [NODE.JS-POSTGRESQL]
 
 
-##Refer to the digital ocean tut https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04 for postgres admin
+## Refer to the digital ocean tut https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-16-04 for postgres admin
 
-##Create the table
+## Create the table
 
 CREATE TABLE nzcrime2017 
 (
@@ -21,7 +21,7 @@ CREATE TABLE nzcrime2017
 
 ##use this in psql cmd to copy csv into table
 
-	$ COPY nzcrime2017 FROM '/home/sugrc1/nodetest/crime-2017.csv' DELIMITER ',' CSV HEADER;
+	$ COPY nzcrime2017 FROM '/home/user/Stack-B/crime-2017.csv' DELIMITER ',' CSV HEADER;
 
 
 
